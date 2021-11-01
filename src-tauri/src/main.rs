@@ -12,7 +12,7 @@ use tauri::State;
 pub struct Mod {
   pub name : String,
   pub version : String,
-  pub repo : Option<String>
+  pub repo : Option<String>,
   pub enabled : bool,
 }
 
