@@ -6,8 +6,8 @@
   "build": {
     "distDir": "../public",
     "devPath": "http://localhost:5000",
-    "beforeDevCommand": "npm dev",
-    "beforeBuildCommand": "npm build"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
   },
   "tauri": {
     "bundle": {
