@@ -13,8 +13,8 @@ Download it [here](https://github.com/RedstoneMedia/SussyLauncher/releases)
 Everyone is welcome to contribute to this. (Why would you want to though ?)
 
 # Build
-If you want to build this yourself, you will need to [install](https://www.rust-lang.org/tools/install) the programming language 🚀.
-This includes the Rusts 🚀 package manager cargo 🚀, which is superior to any other package manager.
+If you want to build this yourself, you will need to [install](https://www.rust-lang.org/tools/install) the Rust programming language 🚀.
+This includes the Rust's 🚀 package manager cargo 🚀, which is superior to any other package manager.
 
 Then you need to install the tauri cli like this: 
 `cargo install tauri-cli --version ^1.0.0-beta`
