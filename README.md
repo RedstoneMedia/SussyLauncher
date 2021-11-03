@@ -7,6 +7,8 @@ This means the Launcher is blazing fast 🚀 and is Memory safe 🚀.
 
 It uses svelte for the frontend.
 
+Download it [here](https://github.com/RedstoneMedia/SussyLauncher/releases)
+
 # Contributions
 Everyone is welcome to contribute to this. (Why would you want to though ?)
 
