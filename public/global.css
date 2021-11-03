@@ -24,14 +24,29 @@ input, button, select, textarea {
 	border-radius: 8px;
 }
 
-button {
+button, input {
 	outline: none;
+}
+
+button:not(:disabled) {
+	cursor: pointer;
 }
 
 button:not(:disabled):active {
 	background-color: #2980b9;
 }
 
-button:focus, button:hover {
+button:focus, button:hover, input:focus, input:hover {
 	border-color: var(--primary);
+}
+
+.panel {
+	padding: 10px 20px 10px 20px;
+	margin: 10px;
+	background-color: var(--panel-color);
+	border: solid var(--border-color);
+	border-radius: 10px;
+	max-height: 50vh;
+	display: block;
+	overflow: auto;
 }
