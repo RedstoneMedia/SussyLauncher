@@ -8,10 +8,23 @@
 	const messages = ["", "baka", "let the sus begin", "Amogus", "Sussy", "When the Imposter is SUS", "DING DING DING DING DING DING", "DING DING DING", "this ain't funny"];
 	let currentMessageIndex = 0;
 	let manage = false;
-	let error_message = "";
+	let errorMessage = "";
 	let doingPlay = false;
+	let loading = true;
+	let loadingMessage = "Loading ...";
+
+	async function checkIfLoaded() {
+		const unlisten = await listen('load', event => {
+			loadingMessage = event.payload;
+			if (event.payload == "done") {
+				loading = false;
+				unlisten();
+			}
+		});
+	}
 
 	async function play() {
+		if (playButtonText == "Sussed") {return;}
 		doingPlay = true;
 		const unlisten = await listen('progress', event => {
 			playButtonText = event.payload as string;
@@ -20,7 +33,7 @@
 			await tauri.invoke("play");
 		} catch(e) {
 			playButtonText = "We made a little sussy wussy";
-			error_message = e;
+			errorMessage = e;
 			console.error(e);
 		}
 		unlisten();
@@ -36,28 +49,34 @@
 	}, 5000);
 
 	setInterval(async () => {
-		if (doingPlay || error_message != "") return;
+		if (doingPlay || errorMessage != "") return;
 		if (await tauri.invoke("is_among_us_running")) {
 			playButtonText = "Sussed"
 		} else {
 			playButtonText = "Play"
 		}
 	}, 1000);
+
+	checkIfLoaded();
 </script>
 
 <main style="grid-template-columns: 1fr {manage ? "1.3fr" : "auto"};">
 	<h1 style="grid-area: ti;">Sussy Launcher</h1>
-	<div id="buttons" style="grid-area: bu;">
-		<button class="wide-button" on:click="{() => manage = !manage}">Manage</button>
-		<button class="wide-button" on:click="{() => play()}">{playButtonText}</button>
-		<p id="error">{error_message}</p>
-	</div>
-	{#if manage}
-		<Manage></Manage>
+	{#if !loading}
+		<div id="buttons" style="grid-area: bu;">
+			<button class="wide-button" on:click="{() => manage = !manage}">Manage</button>
+			<button class="wide-button" disabled="{playButtonText == "Sussed"}" on:click="{() => play()}">{playButtonText}</button>
+			<p id="error">{errorMessage}</p>
+		</div>
+		{#if manage}
+			<Manage></Manage>
+		{/if}
+		<footer style="grid-area: fo;">
+			<p id="message">{message}</p>
+		</footer>
+	{:else}
+		<h2 class="panel" id="loading-text">{loadingMessage}</h2>
 	{/if}
-	<footer style="grid-area: fo;">
-		<p id="message">{message}</p>
-	</footer>
 </main>
 
 <style>
@@ -114,6 +133,15 @@
 		margin: 0;
 		color: var(--red);
 		font-weight: bold;
+	}
+
+	#loading-text {
+		grid-area: bu;
+		text-align: center;
+		color: var(--primary);
+		text-shadow: 0px 0px 10px rgba(70, 218, 255, 0.26);
+		font-weight: 400;
+		width: 80%;
 	}
 
 	/* Global vars */

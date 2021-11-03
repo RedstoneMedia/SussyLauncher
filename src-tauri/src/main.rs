@@ -110,13 +110,30 @@ async fn main() {
     for modification in &mut config.downloaded {
         modification.update_newest_version().await;
     }
-    // Backup among us folder
-    if !std::path::Path::new(&config.backup_among_us_path).exists() {
-        copy_folder(Path::new(&config.among_us_path), &Path::new(&config.backup_among_us_path));
-    }
     let config = Arc::new(Mutex::new(config));
     tauri::Builder::default()
-        .manage(config)
+        .manage(config.clone())
+        .on_page_load(move |window, _| {
+            let config_clone = config.clone();
+            tokio::spawn(async move {
+                let mut config = config_clone.lock().await;
+                if config.among_us_path.len() == 0 {
+                    match config::find_among_us_path(&window) {
+                        Some(among_us_path) => {
+                            config.among_us_path = among_us_path;
+                            config.save();
+                        },
+                        None => {}
+                    }
+                }
+                // Backup among us folder
+                window.emit("load","Backing up").unwrap();
+                if !std::path::Path::new(&config.backup_among_us_path).exists() {
+                    copy_folder(Path::new(&config.among_us_path), &Path::new(&config.backup_among_us_path));
+                }
+                window.emit("load","done").unwrap();
+            });
+        })
         .invoke_handler(tauri::generate_handler!(play, get_mods, update_mod_config, add_mod, is_among_us_running))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
