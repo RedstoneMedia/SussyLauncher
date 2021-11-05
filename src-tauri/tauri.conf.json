@@ -7,13 +7,14 @@
     "distDir": "../public",
     "devPath": "http://localhost:5000",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run build",
+    "withGlobalTauri": false
   },
   "tauri": {
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "com.redstonemedia.sussylauncher",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -24,8 +25,8 @@
       "resources": [],
       "externalBin": [],
       "copyright": "",
-      "category": "DeveloperTool",
-      "shortDescription": "",
+      "category": "Utility",
+      "shortDescription": "A Mod launcher for the game Among Us",
       "longDescription": "",
       "deb": {
         "depends": [],

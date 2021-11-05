@@ -22,7 +22,7 @@
     <div class="panel" id="mod-list-panel">
         <div id="mods">
             {#each mods as mod, index}
-                <Mod mod={mod} index={index}></Mod>
+                <Mod mod={mod} index={index} reloadModListFunction={getMods}></Mod>
             {/each}
         </div>
         <button style="min-width: 50%;" on:click="{() => {download = !download}}">Download</button>

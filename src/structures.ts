@@ -1,9 +1,9 @@
 
 export interface Mod {
-    name : String,
-    version : String,
+    name : string,
+    version : string,
     location : Object,
     enabled : boolean,
-    newest_version : String,
+    newest_version : string,
     do_update : boolean
 }

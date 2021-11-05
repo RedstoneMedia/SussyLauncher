@@ -1,13 +1,9 @@
 use std::path::{Path, PathBuf};
-use reqwest::Client;
-use serde::{Serialize, Deserialize};
-use serde_json::Value;
-use tokio::fs::File;
-use tokio::io::AsyncWriteExt;
-use futures_util::StreamExt;
+use serde::{Deserialize, Serialize};
 use tauri::Window;
 use crate::config::Config;
-use crate::copy_folder;
+use crate::{github_api, util};
+use crate::util::copy_folder;
 use crate::mod_manager::ModLocation::{Github, Local};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,55 +36,6 @@ impl Default for ModLocation {
     fn default() -> Self {
         Self::Local("".to_string())
     }
-}
-
-async fn make_github_api_request(client : &reqwest::Client, route : String) -> Result<serde_json::Value, String> {
-    let response = match client.get(format!("https://api.github.com/{}", route)).send().await {
-        Ok(r) => r,
-        Err(e) => return Err(e.to_string())
-    };
-    if !response.status().is_success() {
-        return Err(format!("Request returned status code {}", response.status().as_u16()))
-    }
-    match response.json::<serde_json::Value>().await {
-        Ok(j) => Ok(j),
-        Err(e) => Err(e.to_string())
-    }
-}
-
-fn get_reqwest_client() -> Client {
-    reqwest::ClientBuilder::new()
-        .user_agent("SussyLauncher")
-        .build()
-        .unwrap()
-}
-
-fn get_assets(newest_release: &Value) -> Vec<Value> {
-    let mut assets = newest_release.get("assets").unwrap().as_array().unwrap().clone();
-    // Only keep assets that are .dll or .zip files
-    assets.retain(|v| match v.get("content_type").unwrap().as_str().unwrap() {
-        "application/x-msdownload" => true,
-        "application/x-zip-compressed" => true,
-        _ => false
-    });
-    // Sort by download count
-    assets.sort_by(|a, b| {
-        let a_download_count = a.get("download_count").unwrap().as_u64().unwrap();
-        let b_download_count = b.get("download_count").unwrap().as_u64().unwrap();
-        b_download_count.cmp(&a_download_count)
-    });
-    assets
-}
-
-async fn get_newest_release(client: &Client, username: &String, repository_name: &String) -> Result<Value, String> {
-    // Get releases
-    let releases_value = make_github_api_request(&client, format!("repos/{}/{}/releases", username, repository_name)).await?;
-    let releases = releases_value.as_array().unwrap();
-    let newest_release = match releases.iter().find(|v| v.get("draft").unwrap().as_bool().unwrap() == false) {
-        Some(r) => r,
-        None => return Err("No releases were found".to_string())
-    };
-    Ok(newest_release.clone())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -127,15 +74,16 @@ impl Mod {
         let mod_type : ModType;
         match &location {
             ModLocation::Github(username, repository_name) => {
-                let client = get_reqwest_client();
-                let repo_json = make_github_api_request(&client, format!("repos/{}/{}", username, repository_name)).await?;
+                let client = util::get_reqwest_client();
+                let repo_json = github_api::make_github_api_request(&client, format!("repos/{}/{}", username, repository_name)).await?;
                 name = repo_json.as_object().unwrap().get("name").unwrap().as_str().unwrap().to_string();
-                let newest_release = get_newest_release(&client, username, repository_name).await?;
+                let newest_release = github_api::get_newest_release(&client, username, repository_name).await?;
                 version = newest_release.get("tag_name").unwrap().as_str().unwrap().to_string();
-                let assets = get_assets(&newest_release);
+                let assets = github_api::get_assets(&newest_release);
                 mod_type = match assets[0].get("content_type").unwrap().as_str().unwrap() {
                     "application/x-msdownload" => ModType::Dll,
                     "application/x-zip-compressed" => ModType::Files,
+                    "application/zip" => ModType::Files,
                     t => {return Err(format!("Invalid mod file type : {}", t))}
                 };
                 if assets.len() == 0 {return Err("No assets found".to_string())}
@@ -166,6 +114,7 @@ impl Mod {
     }
 
     pub async fn download(&mut self, config : &Config, window : &Window) -> Result<(), String> {
+        if !self.enabled { return Ok(()); }
         let update = self.do_update && self.version != self.newest_version && self.enabled;
         let mod_folder = Path::new(&config.mods_path).join(Path::new(&self.name));
         if !mod_folder.exists() {
@@ -174,38 +123,20 @@ impl Mod {
             tokio::fs::remove_dir_all(&mod_folder).await.unwrap();
             tokio::fs::create_dir_all(&mod_folder).await.unwrap();
         } else {
-            return Ok(()); // Already download
+            return Ok(()); // Already downloaded
         }
 
         let output_path  : PathBuf = match &self.location {
             Github(username, repository_name) => {
-                let client = get_reqwest_client();
-                let newest_release = get_newest_release(&client, username, repository_name).await?;
-                let assets = get_assets(&newest_release);
+                let client = util::get_reqwest_client();
+                let newest_release = github_api::get_newest_release(&client, username, repository_name).await?;
+                let assets = github_api::get_assets(&newest_release);
                 let mod_asset = &assets[0];
                 let output_file_name = mod_asset.get("name").unwrap().as_str().unwrap();
-                // Request asset
                 println!("Downloading : {}", output_file_name);
                 let download_url = mod_asset.get("browser_download_url").unwrap().as_str().unwrap();
-                let response = match client.get(download_url).send().await {
-                    Ok(r) => r,
-                    Err(e) => return Err(e.to_string())
-                };
-                if !response.status().is_success() {
-                    return Err(format!("Request returned status code {}", response.status().as_u16()))
-                }
-                let total_size = response.content_length().unwrap();
-                // Download and write asset
-                let mut stream = response.bytes_stream();
-                let mut downloaded: u64 = 0;
                 let output_file_path = mod_folder.join(output_file_name);
-                let mut output_file = File::create(&output_file_path).await.unwrap();
-                while let Some(item) = stream.next().await {
-                    let chunk = item.or(Err(format!("Error while downloading file")))?;
-                    output_file.write(&chunk).await.or(Err(format!("Error while writing to file")))?;
-                    downloaded = total_size.min(downloaded + (chunk.len() as u64));
-                    window.emit("progress", format!("{} {:.1}%", self.name, (downloaded as f64 / total_size as f64) * 100.0)).unwrap();
-                }
+                util::download_file(&client, download_url, &output_file_path, window, &self.name).await?;
                 output_file_path
             },
             Local(path_string) => {
@@ -239,16 +170,34 @@ impl Mod {
         Path::new(&config.mods_path).join(Path::new(&self.name))
     }
 
-    pub async fn install(&self, config : &Config) -> Result<(), String> {
+    pub async fn install(&self, config : &Config, window : &Window) -> Result<(), String> {
         if !self.enabled {return Ok(())}
         let mod_folder = self.get_mod_folder(config);
         match self.mod_type {
             ModType::Files => copy_folder(&mod_folder, &Path::new(&config.among_us_path)),
             ModType::Dll => {
-                let plugins_path = get_plugins_path(config);
+                let plugins_path = util::get_plugins_path(config);
                 if !plugins_path.exists() {
-                    // BepInEx does not exist so all the files required to use it would need to be downloaded
-                    unimplemented!()
+                    // BepInEx is not installed so all the files required to use it will need to be downloaded and extracted
+                    // Download
+                    let client = util::get_reqwest_client();
+                    // TODO: Check if it might also be possible to get BepInEx directly from https://builds.bepis.io/projects/bepinex_be
+                    let release = github_api::get_newest_release(&client, &"NuclearPowered".to_string(), &"BepInEx".to_string()).await?;
+                    let assets= github_api::get_assets(&release).remove(0);
+                    let download_url = assets.get("browser_download_url").unwrap().as_str().unwrap();
+                    let among_us_path = Path::new(&config.among_us_path);
+                    let zip_file_path = among_us_path.join("BepInEx.zip");
+                    util::download_file(&client, download_url, &zip_file_path, window, "BepInEx").await?;
+                    // Extract zip
+                    println!("Extracting : {}", zip_file_path.display());
+                    window.emit("progress", format!("Extracting")).unwrap();
+                    let zip_file = std::fs::File::open(&zip_file_path).or(Err(format!("Cannot open Zip file")))?;
+                    let mut zip_reader = zip::read::ZipArchive::new(zip_file).or(Err(format!("Cannot read zip file")))?;
+                    zip_reader.extract(among_us_path).or(Err(format!("Cannot extract zip file")))?;
+                    tokio::fs::remove_file(zip_file_path).await.or(Err(format!("Could not remove zip file")))?;
+                    tokio::fs::create_dir_all(&plugins_path).await.or(Err(format!("Cannot create plugins folder")))?;
+
+                    window.emit("progress", format!("Installing {}", self.name)).unwrap();
                 }
                 // Copy first file from mod folder to plugins path
                 let dll_path = mod_folder.read_dir().unwrap().next().unwrap().unwrap().path();
@@ -265,7 +214,7 @@ impl Mod {
         if !self.do_uninstall || self.enabled { return Ok(()) }
         let mod_folder = self.get_mod_folder(config);
         if !mod_folder.exists() { return Ok(()) }
-        let plugins_path = get_plugins_path(config);
+        let plugins_path = util::get_plugins_path(config);
         let remove_paths : Vec<PathBuf> = match self.mod_type {
             ModType::Files => {
                 let plugins_folder = mod_folder.join(Path::new("BepInEx/plugins"));
@@ -295,11 +244,22 @@ impl Mod {
         Ok(())
     }
 
+    pub async fn remove(&mut self, config : &Config) -> Result<(), String> {
+        self.do_uninstall = true;
+        self.enabled = false;
+        self.uninstall(config).await?;
+        let mod_folder = self.get_mod_folder(config);
+        if mod_folder.exists() {
+            tokio::fs::remove_dir_all(mod_folder).await.or(Err(format!("Could not remove mod folder")))?;
+        }
+        Ok(())
+    }
+
     pub async fn update_newest_version(&mut self) {
         self.newest_version = match &self.location {
             Github(username, repository_name) => {
-                let client = get_reqwest_client();
-                match get_newest_release(&client, username, repository_name).await {
+                let client = util::get_reqwest_client();
+                match github_api::get_newest_release(&client, username, repository_name).await {
                     Ok(newest_release) => {
                         newest_release.get("tag_name").unwrap().as_str().unwrap().to_string()
                     },
@@ -309,8 +269,4 @@ impl Mod {
             Local(_) => self.version.clone()
         }
     }
-}
-
-fn get_plugins_path(config : &Config) -> PathBuf {
-    Path::new(&config.among_us_path).join(Path::new("BepInEx/plugins"))
 }

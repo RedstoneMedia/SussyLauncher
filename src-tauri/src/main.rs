@@ -4,18 +4,23 @@
 )]
 mod config;
 mod mod_manager;
+mod util;
+mod github_api;
 
 use std::path::Path;
 use std::sync::Arc;
 use sysinfo::{System, SystemExt};
 use tokio::sync::Mutex;
-use tauri::{State};
-use walkdir::WalkDir;
+use serde::{Serialize, Deserialize};
+use tauri::State;
+use once_cell::sync::OnceCell;
 use crate::config::Config;
 use crate::mod_manager::Mod;
 
 type GlobalConfig = Arc<Mutex<Config>>;
 const AMONG_US_STEAM_ID : &'static str = "945360";
+
+static KNOWN_MODS : OnceCell<Vec<KnownMod>> = OnceCell::new();
 
 #[tauri::command]
 async fn play(window: tauri::Window, config: State<'_, GlobalConfig>) -> Result<(), String> {
@@ -38,7 +43,7 @@ async fn play(window: tauri::Window, config: State<'_, GlobalConfig>) -> Result<
             Err(s) => {config.downloaded[index] = modification; return Err(s)}
         }
         window.emit("progress", format!("Installing {}", modification.name)).unwrap();
-        modification.install(&config).await?;
+        modification.install(&config, &window).await?;
         config.downloaded[index] = modification;
     }
     config.save();
@@ -74,8 +79,20 @@ async fn get_mods(config: State<'_, GlobalConfig>) -> Result<Vec<Mod>, String> {
 async fn add_mod(name : String, location : String, version: String, config: State<'_, GlobalConfig>) -> Result<(), String> {
     let new_mod = Mod::new(name, location, version).await?;
     let mut config = config.lock().await;
+    if config.downloaded.iter().any(|m| m.name == new_mod.name) {
+        return Err("Name already exists".to_string())
+    }
     config.downloaded.push(new_mod);
     config.save();
+    Ok(())
+}
+
+#[tauri::command]
+async fn remove_mod(index : usize, config: State<'_, GlobalConfig>) -> Result<(), String> {
+    let mut config = config.lock().await;
+    config.save();
+    let mut mod_to_remove = config.downloaded.remove(index);
+    mod_to_remove.remove(&config).await?;
     Ok(())
 }
 
@@ -86,23 +103,21 @@ async fn is_among_us_running() -> bool {
     !sys.process_by_name("Among Us").is_empty()
 }
 
-fn copy_folder(from : &Path, to : &Path) {
-    for entry in WalkDir::new(from).into_iter().filter_map(|e| e.ok()) {
-        let path = entry.path();
-        if path.is_dir() {continue}
-        let relative_path = pathdiff::diff_paths(path, from).unwrap();
-        let output_path = Path::new(to).join(relative_path);
-        if let Some(parent_dir) = output_path.parent() {
-            std::fs::create_dir_all(parent_dir).unwrap();
-        }
-        if output_path.exists() {continue} // Don't overwrite
-        match std::fs::copy(path, output_path) {
-          Ok(_) => {},
-          Err(e) => {eprintln!("{}", e)}
-        }
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KnownMod {
+    name : String,
+    location : String
 }
 
+#[tauri::command]
+async fn get_possible_mods(name : String) -> Vec<KnownMod> {
+    return KNOWN_MODS.get().unwrap().iter().filter(|m| {
+        m.name
+            .to_lowercase()
+            .replace(" ", "")
+            .starts_with(&name.to_lowercase().replace(" ", ""))
+    }).take(20).map(|m| m.clone()).collect()
+}
 
 #[tokio::main]
 async fn main() {
@@ -110,6 +125,7 @@ async fn main() {
     for modification in &mut config.downloaded {
         modification.update_newest_version().await;
     }
+    KNOWN_MODS.set(util::load_known_mods().await).unwrap();
     let config = Arc::new(Mutex::new(config));
     tauri::Builder::default()
         .manage(config.clone())
@@ -129,12 +145,19 @@ async fn main() {
                 // Backup among us folder
                 window.emit("load","Backing up").unwrap();
                 if !std::path::Path::new(&config.backup_among_us_path).exists() {
-                    copy_folder(Path::new(&config.among_us_path), &Path::new(&config.backup_among_us_path));
+                    util::copy_folder(Path::new(&config.among_us_path), &Path::new(&config.backup_among_us_path));
                 }
                 window.emit("load","done").unwrap();
             });
         })
-        .invoke_handler(tauri::generate_handler!(play, get_mods, update_mod_config, add_mod, is_among_us_running))
+        .invoke_handler(tauri::generate_handler!(
+            play,
+            get_mods,
+            update_mod_config,
+            add_mod,
+            remove_mod,
+            is_among_us_running,
+            get_possible_mods))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

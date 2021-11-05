@@ -26,6 +26,7 @@
 	async function play() {
 		if (playButtonText == "Sussed") {return;}
 		doingPlay = true;
+		manage = false;
 		const unlisten = await listen('progress', event => {
 			playButtonText = event.payload as string;
 		});
@@ -64,9 +65,9 @@
 	<h1 style="grid-area: ti;">Sussy Launcher</h1>
 	{#if !loading}
 		<div id="buttons" style="grid-area: bu;">
-			<button class="wide-button" on:click="{() => manage = !manage}">Manage</button>
+			<button class="wide-button" on:click="{() => manage = !manage && !doingPlay}">Manage</button>
 			<button class="wide-button" disabled="{playButtonText == "Sussed"}" on:click="{() => play()}">{playButtonText}</button>
-			<p id="error">{errorMessage}</p>
+			<p class="error">{errorMessage}</p>
 		</div>
 		{#if manage}
 			<Manage></Manage>
@@ -127,14 +128,7 @@
 		color: var(--primary);
 		font-weight: 200;
 	}
-
-	#error {
-		text-align: center;
-		margin: 0;
-		color: var(--red);
-		font-weight: bold;
-	}
-
+	
 	#loading-text {
 		grid-area: bu;
 		text-align: center;

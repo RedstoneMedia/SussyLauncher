@@ -43,6 +43,7 @@ name = "app"
 version = "0.0.2"
 dependencies = [
  "futures-util",
+ "once_cell",
  "pathdiff",
  "reqwest",
  "serde",
