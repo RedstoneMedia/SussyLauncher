@@ -2,7 +2,7 @@
 /public/build/
 
 .DS_Store
-
+package-lock.json
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm,node
