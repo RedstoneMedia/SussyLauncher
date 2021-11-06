@@ -1,7 +1,7 @@
 # Sussy Launcher ඞ
 A very simple mod launcher/loader for the game Among Us (Also referred to as Amogus ඞ).
 
-![sussy_launcher](https://user-images.githubusercontent.com/34373974/140609899-aefbdacf-2470-4e83-bff5-cd97af029e0e.png)
+![sussy_launcher_bigger](https://user-images.githubusercontent.com/34373974/140614792-05dbc9a7-0c37-4877-ba57-75b5987ce91b.png)
 
 This Project is written with the Rust programming language 🚀 and the tauri framework 🚀.
 The use of the rust Programming language is import because of its zero cost abstractions 🚀🚀.
