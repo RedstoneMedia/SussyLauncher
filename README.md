@@ -1,3 +1,4 @@
+
 # Sussy Launcher ඞ
 ![Version](https://img.shields.io/github/v/release/RedstoneMedia/SussyLauncher?style=for-the-badge)
 ![Rocket spam 🚀🚀🚀🚀🚀 go brrr](https://img.shields.io/badge/blazingfast-%F0%9F%9A%80-blueviolet?style=for-the-badge)
@@ -16,8 +17,8 @@ This Project is written with the Rust programming language 🚀 and the tauri fr
 The use of the rust Programming language is import because of its zero cost abstractions 🚀🚀❌💱💹💰. \
 This means the Launcher is blazing fast 🚀💨 and is Memory safe 🚀🔒💾.
 
-It uses svelte for the frontend 💻, wich is obviusly the best web framework/compiler 👍. \
-Apart from using Rust 🚀 with Webassembly 🌐🔨.
+It uses svelte for the frontend 💻, which is obviously the best web framework/compiler 👍. \
+Apart from using Rust 🚀 with WebAssembly 🌐🔨.
 
 Download it [here](https://github.com/RedstoneMedia/SussyLauncher/releases) 🔽 \
 Either use the installer, or just open the exe (This will create new files at the exe location ‼😲)
@@ -26,9 +27,9 @@ Either use the installer, or just open the exe (This will create new files at th
 Everyone is welcome to contribute to this. (Why would you want to, though ?) \
 I will accept every pull request, that doesn't:
 - Completely break everything 😲💥
-- Contain the word "Go" 🤡 or "Golang" 🤡 anywhere, including the code <- Completly Inaccaptable 🚫🙅‍♂️😳�
+- Contain the word "Go" 🤡 or "Golang" 🤡 anywhere, including the code <- Completely Unacceptable 🚫🙅‍♂️😳�
 - Overcomplicated the App. (This Launcher is supposed to be relatively simple and intuitive) 🥶
-- States that annything happend on the 5th April 1976, at Tiananmen Square 🚷❓❌🈲㊙🙈
+- States that anything happened on the 5th April 1976, at Tiananmen Square 🚷❓❌🈲㊙🙈
 
 # Build
 If you want to build this yourself, you will need to [install](https://www.rust-lang.org/tools/install) the Rust programming language 🚀.
