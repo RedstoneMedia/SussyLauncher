@@ -1,7 +1,7 @@
 
 # Sussy Launcher ඞ
 ![Version](https://img.shields.io/github/v/release/RedstoneMedia/SussyLauncher?style=for-the-badge)
-![Rocket spam 🚀🚀🚀🚀🚀 go brrr](https://img.shields.io/badge/blazingfast-%F0%9F%9A%80-blueviolet?style=for-the-badge)
+![Rocket spam 🚀🚀🚀🚀🚀 go brrr](https://img.shields.io/badge/blazingfast-%F0%9F%9A%80%F0%9F%92%A8-blueviolet?style=for-the-badge)
 ![Memory Safe](https://img.shields.io/badge/Memory%20Safe-%F0%9F%94%92-informational?style=for-the-badge)
 ![Bruh](https://img.shields.io/badge/Kids%20in%20the%20Basement-69%20%F0%9F%98%82%F0%9F%A4%A3-critical?style=for-the-badge)
 ![GPL-3](https://img.shields.io/github/license/RedstoneMedia/SussyLauncher?style=for-the-badge)
