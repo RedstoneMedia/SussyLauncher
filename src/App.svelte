@@ -121,6 +121,10 @@
 		word-wrap: break-word;
 	}
 
+	.wide-button:hover {
+		font-size: 2.2em;
+	}
+
 	#message {
 		text-align: center;
 		margin: 0;
@@ -141,7 +145,7 @@
 	/* Global vars */
 
 	:root {
-		--background-color: #34495e;
+		--background: radial-gradient(circle, rgba(52,73,94,1) 0%, rgba(43,58,74,1) 53%, rgba(27,33,39,1) 100%);
 		--border-color: #3498db;
 		--text-color: #ecf0f1;
 		--red: #e74c3c;
