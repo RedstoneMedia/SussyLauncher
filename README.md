@@ -1,4 +1,8 @@
 # Sussy Launcher ඞ
+![Version](https://img.shields.io/github/v/release/RedstoneMedia/SussyLauncher?style=for-the-badge)
+![GPL-3](https://img.shields.io/github/license/RedstoneMedia/SussyLauncher?style=for-the-badge)
+![Issues](https://img.shields.io/github/issues/RedstoneMedia/SussyLauncher?style=for-the-badge)
+
 A very simple mod launcher/loader for the game Among Us (Also referred to as Amogus ඞ).
 
 ![sussy_launcher_bigger](https://user-images.githubusercontent.com/34373974/140614792-05dbc9a7-0c37-4877-ba57-75b5987ce91b.png)
