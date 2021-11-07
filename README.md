@@ -45,3 +45,5 @@ For these next steps to work, you might have to [install](https://developer.micr
 To run it in dev mode, you can run `cargo tauri dev`. \
 If you want to build it, just run `cargo tauri build`. \
 The build output then is in `src-tauri/target/release` (Also contains the installers in `/bundle`) 🆗
+
+<sup><sub>*(yeah ik I'm trying way too hard to make this "funny")*</sub></sup>
