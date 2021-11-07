@@ -3,10 +3,11 @@ use std::path::Path;
 use std::fs::{File};
 use sysinfo::{DiskExt, SystemExt};
 use tauri::Window;
-use walkdir::WalkDir;
+use walkdir::{WalkDir};
 use crate::mod_manager::Mod;
 
 const AMONG_US_PATH_SKIP_DIRS : [&'static str; 26] = ["source", "videos", "images", "docs", "documents", "src", "music", "dev", "windows", "programdata", "lib", "library", "services", "service", "data", "sdk", "packs", "share", "shared", "doc", "required", "bin", "microsoft", "common files", "sysfiles", "content"];
+const COMMON_AMONG_US_PATHS : [&'static str; 4] = ["Program Files/Steam/steamapps/common/Among Us/Among Us.exe", "Program Files (x86)/Steam/steamapps/common/Among Us/Among Us.exe", "Program Files/Epic Games/Among Us/Among Us.exe", "Program Files (x86)/Epic Games/Among Us/Among Us.exe"];
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -17,11 +18,39 @@ pub struct Config {
     pub run_with_steam : bool
 }
 
+fn is_among_us_path(path : &Path) -> bool {
+    if !path.exists() {return false}
+    if path.extension().is_none() { return false }
+    if path.file_name().unwrap().to_str().unwrap() != "Among Us.exe" { return false }
+    if path.parent().is_none() { return false }
+    let parent_dir_name = path.parent().unwrap().file_name();
+    if parent_dir_name.is_none() { return false }
+    if parent_dir_name.unwrap() != "Among Us" { return false }
+    return true
+}
+
 #[cfg(target_family = "windows")]
 pub fn find_among_us_path(window : &Window) -> Option<String> {
     let mut sys = sysinfo::System::new();
     sys.refresh_disks_list();
-    for disk in sys.disks() {
+    let disks = sys.disks();
+    // Search for common locations first
+    for disk in disks {
+        let disk_path = disk.mount_point();
+        if let Some(among_us_path) = COMMON_AMONG_US_PATHS.iter().find_map(|p| {
+            let path = disk_path.join(Path::new(p));
+            println!("{}", path.display());
+            if is_among_us_path(&path) {
+                Some(path)
+            } else {
+                None
+            }
+        }) {
+            return Some(among_us_path.display().to_string());
+        }
+    }
+    // Search basically everywhere
+    for disk in disks {
         let disk_path = disk.mount_point();
         println!("Searching disk : {}", disk.mount_point().to_str().unwrap());
         let among_us_path = WalkDir::new(disk_path).into_iter().filter_entry(|e| {
@@ -50,13 +79,7 @@ pub fn find_among_us_path(window : &Window) -> Option<String> {
                 }
                 return false
             }
-            if path.extension().is_none() {return false}
-            if entry.file_name().to_str().unwrap() != "Among Us.exe" {return false}
-            if path.parent().is_none() {return false}
-            let parent_dir_name = path.parent().unwrap().file_name();
-            if parent_dir_name.is_none() {return false}
-            if parent_dir_name.unwrap() != "Among Us" {return false}
-            return true
+            is_among_us_path(path)
         });
         if among_us_path.is_some() {
             return Some(among_us_path.unwrap().path().parent().unwrap().display().to_string())

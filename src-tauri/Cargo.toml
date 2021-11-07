@@ -2,24 +2,22 @@
 name = "app"
 version = "0.1.0"
 description = "Sussy Launcher ඞ 🚀🚀🚀🚀"
-authors = ["RedstoneMedia"]
+authors = [ "RedstoneMedia" ]
 license = ""
 repository = ""
 default-run = "app"
 edition = "2018"
 build = "src/build.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [build-dependencies]
 tauri-build = { version = "1.0.0-beta.4" }
 
 [dependencies]
 serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = [ "derive" ] }
 tauri = { version = "1.0.0-beta.8", features = ["api-all"] }
-tokio = {version = "1.13.0", features = ["sync", "net", "rt", "macros"] }
-reqwest = { version = "0.11.6", features = ["json", "stream"] }
+tokio = { version = "1.13.0", features = [ "sync", "net", "rt", "macros" ] }
+reqwest = { version = "0.11.6", features = [ "json", "stream" ] }
 zip = "0.5.13"
 futures-util = "0.3.17"
 walkdir = "2.3.2"
