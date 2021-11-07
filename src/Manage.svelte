@@ -16,6 +16,7 @@
 		}
 	}
     getMods();
+    // TODO: Rename Download to Add in the code to avoid confusion
 </script>
 
 <main in:fly={{ y: -50, duration: 1000 }} out:fade={{ duration: 500 }}>
@@ -25,7 +26,13 @@
                 <Mod mod={mod} index={index} reloadModListFunction={getMods}></Mod>
             {/each}
         </div>
-        <button style="min-width: 50%;" on:click="{() => {download = !download}}">Download</button>
+        <button style="min-width: 50%;" on:click="{() => {download = !download}}">
+            {#if !download}
+                Add
+            {:else}
+                Close
+            {/if}
+        </button>
     </div>
     {#if download}
         <Donwload hidePanleFunction={() => {

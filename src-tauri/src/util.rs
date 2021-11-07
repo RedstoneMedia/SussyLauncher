@@ -22,7 +22,7 @@ pub fn copy_folder(from : &Path, to : &Path) {
         if output_path.exists() {continue} // Don't overwrite
         match std::fs::copy(path, output_path) {
           Ok(_) => {},
-          Err(e) => {eprintln!("{}", e)}
+          Err(e) => {eprintln!("cannot copy {} to {} Error: {}", path.display(), to.display(), e)}
         }
     }
 }

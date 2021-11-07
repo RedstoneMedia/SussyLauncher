@@ -7,7 +7,7 @@ use walkdir::{WalkDir};
 use crate::mod_manager::Mod;
 
 const AMONG_US_PATH_SKIP_DIRS : [&'static str; 26] = ["source", "videos", "images", "docs", "documents", "src", "music", "dev", "windows", "programdata", "lib", "library", "services", "service", "data", "sdk", "packs", "share", "shared", "doc", "required", "bin", "microsoft", "common files", "sysfiles", "content"];
-const COMMON_AMONG_US_PATHS : [&'static str; 4] = ["Program Files/Steam/steamapps/common/Among Us/Among Us.exe", "Program Files (x86)/Steam/steamapps/common/Among Us/Among Us.exe", "Program Files/Epic Games/Among Us/Among Us.exe", "Program Files (x86)/Epic Games/Among Us/Among Us.exe"];
+const COMMON_AMONG_US_PATHS : [&'static str; 6] = ["Program Files/Steam/steamapps/common/Among Us/Among Us.exe", "Program Files (x86)/Steam/steamapps/common/Among Us/Among Us.exe", "Program Files/Epic Games/Among Us/Among Us.exe", "Program Files (x86)/Epic Games/Among Us/Among Us.exe", "SteamLibrary/steamapps/common/Among Us/Among Us.exe"];
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -46,7 +46,7 @@ pub fn find_among_us_path(window : &Window) -> Option<String> {
                 None
             }
         }) {
-            return Some(among_us_path.display().to_string());
+            return Some(among_us_path.parent().unwrap().display().to_string());
         }
     }
     // Search basically everywhere

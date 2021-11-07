@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tauri::Window;
 use crate::config::Config;
 use crate::{github_api, util};
@@ -80,12 +81,7 @@ impl Mod {
                 let newest_release = github_api::get_newest_release(&client, username, repository_name).await?;
                 version = newest_release.get("tag_name").unwrap().as_str().unwrap().to_string();
                 let assets = github_api::get_assets(&newest_release);
-                mod_type = match assets[0].get("content_type").unwrap().as_str().unwrap() {
-                    "application/x-msdownload" => ModType::Dll,
-                    "application/x-zip-compressed" => ModType::Files,
-                    "application/zip" => ModType::Files,
-                    t => {return Err(format!("Invalid mod file type : {}", t))}
-                };
+                mod_type = get_mod_type(&assets[0])?;
                 if assets.len() == 0 {return Err("No assets found".to_string())}
             },
             ModLocation::Local(path_string) => {
@@ -132,6 +128,7 @@ impl Mod {
                 let newest_release = github_api::get_newest_release(&client, username, repository_name).await?;
                 let assets = github_api::get_assets(&newest_release);
                 let mod_asset = &assets[0];
+                self.mod_type = get_mod_type(&mod_asset)?;
                 let output_file_name = mod_asset.get("name").unwrap().as_str().unwrap();
                 println!("Downloading : {}", output_file_name);
                 let download_url = mod_asset.get("browser_download_url").unwrap().as_str().unwrap();
@@ -269,4 +266,13 @@ impl Mod {
             Local(_) => self.version.clone()
         }
     }
+}
+
+fn get_mod_type(asset: &Value) -> Result<ModType, String> {
+    Ok(match asset.get("content_type").unwrap().as_str().unwrap() {
+        "application/x-msdownload" => ModType::Dll,
+        "application/x-zip-compressed" => ModType::Files,
+        "application/zip" => ModType::Files,
+        t => { return Err(format!("Invalid mod file type : {}", t)) }
+    })
 }
