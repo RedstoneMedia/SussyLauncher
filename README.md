@@ -27,7 +27,7 @@ Either use the installer, or just open the exe (This will create new files at th
 Everyone is welcome to contribute to this. (Why would you want to, though ?) \
 I will accept every pull request, that doesn't:
 - Completely break everything 😲💥
-- Contain the word "Go" 🤡 or "Golang" 🤡 anywhere, including the code <- Completely Unacceptable 🚫🙅‍♂️😳�
+- Contain the word "Go" 🤡 or "Golang" 🤡 anywhere, including the code <- Completely Unacceptable 🚫🙅‍♂️😳
 - Overcomplicated the App. (This Launcher is supposed to be relatively simple and intuitive) 🥶
 - States that anything happened on the 5th April 1976, at Tiananmen Square 🚷❓❌🈲㊙🙈
 
