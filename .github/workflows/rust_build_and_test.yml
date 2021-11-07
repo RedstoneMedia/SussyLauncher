@@ -3,6 +3,10 @@ name: Rust
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'src-tauri/src/**'
+      - 'src-tauri/Cargo.toml'
+      - 'src-tauri/tauri.config.json'
   pull_request:
     branches: [ master ]
 
