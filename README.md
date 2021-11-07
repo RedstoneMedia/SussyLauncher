@@ -1,5 +1,6 @@
 # Sussy Launcher ඞ
 ![Version](https://img.shields.io/github/v/release/RedstoneMedia/SussyLauncher?style=for-the-badge)
+![Build](https://img.shields.io/github/workflow/status/RedstoneMedia/SussyLauncher/Rust?style=for-the-badge)
 ![GPL-3](https://img.shields.io/github/license/RedstoneMedia/SussyLauncher?style=for-the-badge)
 ![Issues](https://img.shields.io/github/issues/RedstoneMedia/SussyLauncher?style=for-the-badge)
 
