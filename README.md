@@ -3,6 +3,7 @@
 ![Build](https://img.shields.io/github/workflow/status/RedstoneMedia/SussyLauncher/Rust?style=for-the-badge)
 ![GPL-3](https://img.shields.io/github/license/RedstoneMedia/SussyLauncher?style=for-the-badge)
 ![Issues](https://img.shields.io/github/issues/RedstoneMedia/SussyLauncher?style=for-the-badge)
+![Rocket spam 🚀🚀🚀🚀🚀](https://img.shields.io/badge/blazingfast-%F0%9F%9A%80-blueviolet?style=for-the-badge)
 
 A very simple mod launcher/loader for the game Among Us (Also referred to as Amogus ඞ).
 
