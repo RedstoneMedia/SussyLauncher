@@ -5,7 +5,7 @@
 
 	let playButtonText = "Play";
 	let message = "";
-	const messages = ["", "baka", "let the sus begin", "Amogus", "Sussy", "When the Imposter is SUS", "DING DING DING DING DING DING", "DING DING DING", "this ain't funny"];
+	const messages = ["", "baka", "let the sus begin", "Amogus", "Sussy", "When the Imposter is SUS", "DING DING DING DING DING DING", "DING DING DING", "🤨"];
 	let currentMessageIndex = 0;
 	let manage = false;
 	let errorMessage = "";

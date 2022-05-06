@@ -12,7 +12,7 @@ use std::sync::Arc;
 use sysinfo::{System, SystemExt};
 use tokio::sync::Mutex;
 use serde::{Serialize, Deserialize};
-use tauri::State;
+use tauri::{Manager, ShellScope, State};
 use once_cell::sync::OnceCell;
 use crate::config::Config;
 use crate::mod_manager::Mod;
@@ -50,10 +50,10 @@ async fn play(window: tauri::Window, config: State<'_, GlobalConfig>) -> Result<
     // Start Among Us
     window.emit("progress", format!("Sussing ...")).unwrap();
     if config.run_with_steam {
-        tauri::api::shell::open(format!("steam://rungameid/{}", AMONG_US_STEAM_ID), None)
+        tauri::api::shell::open(&window.shell_scope(), format!("steam://rungameid/{}", AMONG_US_STEAM_ID), None)
             .or(Err(format!("Could not start among us")))?;
     } else {
-        tauri::api::shell::open(Path::new(&config.among_us_path).join("Among Us.exe").display().to_string(), None)
+        tauri::api::shell::open(&window.shell_scope(), Path::new(&config.among_us_path).join("Among Us.exe").display().to_string(), None)
             .or(Err(format!("Could not start among us")))?;
     }
     Ok(())
@@ -100,7 +100,7 @@ async fn remove_mod(index : usize, config: State<'_, GlobalConfig>) -> Result<()
 async fn is_among_us_running() -> bool {
     let mut sys = System::new();
     sys.refresh_processes();
-    !sys.process_by_name("Among Us").is_empty()
+    sys.processes_by_name("Among Us").count() > 0
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -147,6 +147,7 @@ async fn main() {
                 if !std::path::Path::new(&config.backup_among_us_path).exists() {
                     util::copy_folder(Path::new(&config.among_us_path), &Path::new(&config.backup_among_us_path));
                 }
+                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
                 window.emit("load","done").unwrap();
             });
         })
