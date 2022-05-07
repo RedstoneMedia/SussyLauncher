@@ -12,7 +12,7 @@ use std::sync::Arc;
 use sysinfo::{System, SystemExt};
 use tokio::sync::Mutex;
 use serde::{Serialize, Deserialize};
-use tauri::{Manager, ShellScope, State};
+use tauri::{Manager, State};
 use once_cell::sync::OnceCell;
 use crate::config::Config;
 use crate::mod_manager::Mod;

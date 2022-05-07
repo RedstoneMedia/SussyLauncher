@@ -1,4 +1,7 @@
 [
   {"name" : "TheOtherRoles", "location" : "https://github.com/Eisbison/TheOtherRoles"},
-  {"name" : "TheOtherRolesExtended", "location" : "https://github.com/Alex2911/TheOtherRoles_Extended"}
+  {"name" : "Town-Of-Us-R", "location" : "https://github.com/eDonnes124/Town-Of-Us-R"},
+  {"name" : "Reactor", "location" : "https://github.com/NuclearPowered/Reactor"},
+  {"name" : "Submerged", "location" : "https://github.com/SubmergedAmongUs/Submerged"},
+  {"name" : "LasMonjas", "location" : "https://github.com/KiraYamato94/LasMonjas"}
 ]

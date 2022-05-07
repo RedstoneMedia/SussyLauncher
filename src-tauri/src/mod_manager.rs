@@ -269,10 +269,11 @@ impl Mod {
 }
 
 fn get_mod_type(asset: &Value) -> Result<ModType, String> {
-    Ok(match asset.get("content_type").unwrap().as_str().unwrap() {
-        "application/x-msdownload" => ModType::Dll,
-        "application/x-zip-compressed" => ModType::Files,
-        "application/zip" => ModType::Files,
-        t => { return Err(format!("Invalid mod file type : {}", t)) }
+    Ok(match (asset.get("content_type").unwrap().as_str().unwrap(), asset.get("name").unwrap().as_str().unwrap().split(".").last().unwrap()) {
+        ("application/x-msdownload", _) => ModType::Dll,
+        ("application/octet-stream", "dll") => ModType::Dll,
+        ("application/x-zip-compressed", _) => ModType::Files,
+        ("application/zip", _) => ModType::Files,
+        (t, _) => { return Err(format!("Invalid mod file type : {}", t)) }
     })
 }
