@@ -12,7 +12,7 @@ use std::sync::Arc;
 use sysinfo::{System, SystemExt};
 use tokio::sync::Mutex;
 use serde::{Serialize, Deserialize};
-use tauri::{Manager, State};
+use tauri::State;
 use once_cell::sync::OnceCell;
 use crate::config::Config;
 use crate::mod_manager::Mod;
@@ -50,10 +50,10 @@ async fn play(window: tauri::Window, config: State<'_, GlobalConfig>) -> Result<
     // Start Among Us
     window.emit("progress", format!("Sussing ...")).unwrap();
     if config.run_with_steam {
-        tauri::api::shell::open(&window.shell_scope(), format!("steam://rungameid/{}", AMONG_US_STEAM_ID), None)
+        open::that(format!("steam://rungameid/{}", AMONG_US_STEAM_ID))
             .or(Err(format!("Could not start among us")))?;
     } else {
-        tauri::api::shell::open(&window.shell_scope(), Path::new(&config.among_us_path).join("Among Us.exe").display().to_string(), None)
+        open::that(Path::new(&config.among_us_path).join("Among Us.exe").display().to_string())
             .or(Err(format!("Could not start among us")))?;
     }
     Ok(())

@@ -14,6 +14,11 @@
         await tauri.invoke("remove_mod", {"index" : index});
         reloadModListFunction();
     }
+    
+    async function update_mod(_ : Event) {
+        mod.do_update = true;
+        update_mod_config()
+    }
 </script>
 
 <span class="mod">
@@ -23,11 +28,11 @@
         {mod.version}
     </span>
     <span>
-        <span class="remove" on:click="{() => remove_mod()}">🗑️</span>
+        <span class="remove" on:click="{() => remove_mod()}" on:keydown="{() => remove_mod()}">🗑️</span>
         {#if mod.version != mod.newest_version}
             <span class="update">
                 {#if !mod.do_update}
-                <span class="newer-version" on:click="{() => {mod.do_update = true; update_mod_config()}}">🔼{mod.newest_version}</span>
+                <span class="newer-version" on:click="{update_mod}" on:keydown="{update_mod}">🔼{mod.newest_version}</span>
                 {:else}
                     Will Update
                 {/if}
