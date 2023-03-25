@@ -14,7 +14,7 @@ pub enum ModLocation {
 }
 
 impl ModLocation {
-    pub fn new(location_string : String) -> Self {
+    pub fn new(location_string : &str) -> Self {
         if location_string.starts_with("https://") {
             let url = reqwest::Url::parse(&location_string).unwrap();
             match url.domain().unwrap() {
@@ -28,7 +28,7 @@ impl ModLocation {
                 _ => unimplemented!()
             }
         } else {
-            Local(location_string)
+            Local(location_string.to_string())
         }
     }
 }
@@ -63,7 +63,7 @@ pub struct Mod {
 
 impl Mod {
 
-    pub async fn new(mut name : String, location_string : String, mut version : String) -> Result<Self, String> {
+    pub async fn new(mut name : String, location_string : &str, mut version : String) -> Result<Self, String> {
         if name.len() < 3 {
             return Err("Name is to short".to_string());
         }

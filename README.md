@@ -36,7 +36,7 @@ If you want to build this yourself, you will need to [install](https://www.rust-
 This includes the Rust's 🚀 package manager cargo 🚀, which is superior to any other package manager 💯.
 
 Then you need to install the tauri cli like this: 🔽 \
-`cargo install tauri-cli --version ^1.0.0-beta`
+`cargo install tauri-cli --version ^1.2`
 
 Then you only need to run `npm install` and after that you can already start building. 👨‍💻
 
@@ -46,4 +46,4 @@ To run it in dev mode, you can run `cargo tauri dev`. \
 If you want to build it, just run `cargo tauri build`. \
 The build output then is in `src-tauri/target/release` (Also contains the installers in `/bundle`) 🆗
 
-<sup><sub>*(yeah ik I'm trying way too hard to make this "funny")*</sub></sup>
+<sup><sub>*(verry funny)*</sub></sup>

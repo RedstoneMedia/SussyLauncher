@@ -12,7 +12,7 @@ use std::sync::Arc;
 use sysinfo::{System, SystemExt};
 use tokio::sync::Mutex;
 use serde::{Serialize, Deserialize};
-use tauri::State;
+use tauri::{State, Window};
 use once_cell::sync::OnceCell;
 use crate::config::Config;
 use crate::mod_manager::Mod;
@@ -77,7 +77,7 @@ async fn get_mods(config: State<'_, GlobalConfig>) -> Result<Vec<Mod>, String> {
 
 #[tauri::command]
 async fn add_mod(name : String, location : String, version: String, config: State<'_, GlobalConfig>) -> Result<(), String> {
-    let new_mod = Mod::new(name, location, version).await?;
+    let new_mod = Mod::new(name, &location, version).await?;
     let mut config = config.lock().await;
     if config.downloaded.iter().any(|m| m.name == new_mod.name) {
         return Err("Name already exists".to_string())
@@ -119,6 +119,29 @@ async fn get_possible_mods(name : String) -> Vec<KnownMod> {
     }).take(20).map(|m| m.clone()).collect()
 }
 
+async fn on_page_load(window: Window, config: Arc<Mutex<Config>>) {
+    let mut config = config.lock().await;
+    if config.among_us_path.len() == 0 {
+        match config::find_among_us_path(&window) {
+            Some(among_us_path) => {
+                config.among_us_path = among_us_path;
+                config.save();
+            },
+            None => {}
+        }
+    }
+    // Backup among us folder on first run
+    if !std::path::Path::new(&config.backup_among_us_path).exists() {
+        window.emit("load","Backing up").unwrap();
+        util::copy_folder(Path::new(&config.among_us_path), &Path::new(&config.backup_among_us_path));
+    }
+    // Try to detect preinstalled mods
+    config.add_previously_installed_mods(&window).await;
+    // Wait a bit because that's apparently needed for the app not to freeze 🥶
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+    window.emit("load","done").unwrap();
+}
+
 #[tokio::main]
 async fn main() {
     let mut config = Config::load();
@@ -132,23 +155,7 @@ async fn main() {
         .on_page_load(move |window, _| {
             let config_clone = config.clone();
             tokio::spawn(async move {
-                let mut config = config_clone.lock().await;
-                if config.among_us_path.len() == 0 {
-                    match config::find_among_us_path(&window) {
-                        Some(among_us_path) => {
-                            config.among_us_path = among_us_path;
-                            config.save();
-                        },
-                        None => {}
-                    }
-                }
-                // Backup among us folder
-                window.emit("load","Backing up").unwrap();
-                if !std::path::Path::new(&config.backup_among_us_path).exists() {
-                    util::copy_folder(Path::new(&config.among_us_path), &Path::new(&config.backup_among_us_path));
-                }
-                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                window.emit("load","done").unwrap();
+                on_page_load(window, config_clone).await
             });
         })
         .invoke_handler(tauri::generate_handler!(
